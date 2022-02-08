@@ -100,13 +100,13 @@ def sign_up():
             flash('Please enter password')
         else:
             sign_up_message = 'You have successfully signed up'
+
+            conn = get_db_connection()
+
+            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+            conn.commit()
+            conn.close()
             return render_template('sign_up.html', message=sign_up_message)
-
-        conn = get_db_connection()
-
-        conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
-        conn.commit()
-        conn.close()
 
     return render_template('sign_up.html')
 
@@ -121,11 +121,12 @@ def sign_in():
             flash('Please enter username')
         elif not password:
             flash('Please enter password')
-        else:
-            conn = get_db_connection()
 
-            active_user = conn.execute('SELECT username, password FROM users '
-                                       'WHERE username = ?', (username,)).fetchone()
+        conn = get_db_connection()
+
+        active_user = conn.execute('SELECT username, password FROM users '
+                                   'WHERE username = ?', (username,)).fetchone()
+        if active_user is not None:
             true_password = active_user['password']
             sign_in_message = 'You have successfully signed in'
             wrong_password_message = 'Wrong password. Please check the data'
@@ -134,6 +135,8 @@ def sign_in():
                 return render_template('sign_in.html', message=sign_in_message)
             else:
                 return render_template('sign_in.html', message=wrong_password_message)
+        else:
+            flash('This user was not found. Please sign up')
 
     return render_template('sign_in.html')
 
