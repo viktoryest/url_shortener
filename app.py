@@ -2,6 +2,7 @@ import os
 import sqlite3
 from hashids import Hashids
 from flask import Flask, render_template, request, flash, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
 import init_db
 
 development = os.environ.get('HEROKU') is None
@@ -14,7 +15,7 @@ def get_db_connection():
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "flyingcircus"
+app.config['SECRET_KEY'] = 'your_secret_key'
 
 hashids = Hashids(min_length=4, salt=app.config['SECRET_KEY'])
 
@@ -93,6 +94,7 @@ def sign_up():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        psw_hash = generate_password_hash(password)
 
         if not username:
             flash('Please enter username')
@@ -103,10 +105,15 @@ def sign_up():
 
             conn = get_db_connection()
 
-            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
-            conn.commit()
-            conn.close()
-            return render_template('sign_up.html', message=sign_up_message)
+            unique_users_count = conn.execute(f"SELECT COUNT() as `count` FROM users WHERE "
+                                              f"username LIKE '{username}'").fetchone()['count']
+            if unique_users_count > 0:
+                flash('Sorry, a user with this name already exists')
+            else:
+                conn.execute('INSERT INTO users (username, psw_hash) VALUES (?, ?)', (username, psw_hash))
+                conn.commit()
+                conn.close()
+                return render_template('sign_up.html', message=sign_up_message)
 
     return render_template('sign_up.html')
 
@@ -124,14 +131,15 @@ def sign_in():
 
         conn = get_db_connection()
 
-        active_user = conn.execute('SELECT username, password FROM users '
+        active_user = conn.execute('SELECT username, psw_hash FROM users '
                                    'WHERE username = ?', (username,)).fetchone()
+
         if active_user is not None:
-            true_password = active_user['password']
+            true_psw_hash = active_user['psw_hash']
             sign_in_message = 'You have successfully signed in'
             wrong_password_message = 'Wrong password. Please check the data'
 
-            if password == true_password:
+            if check_password_hash(true_psw_hash, password):
                 return render_template('sign_in.html', message=sign_in_message)
             else:
                 return render_template('sign_in.html', message=wrong_password_message)

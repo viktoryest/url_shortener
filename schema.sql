@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS urls (
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username NOT NULL,
-    password NOT NULL
+    psw_hash NOT NULL
 );
