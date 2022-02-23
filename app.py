@@ -29,7 +29,7 @@ def load_user(user_id):
     return UserLogin().get_from_db(user_id, get_db_connection())
 
 
-@app.route('/', methods=('GET', 'POST'))
+@app.route('/', methods=['GET', 'POST'])
 def index():
     conn = get_db_connection()
 
