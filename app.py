@@ -2,7 +2,7 @@ import os
 import sqlite3
 from hashids import Hashids
 from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import init_db
 from user_class import UserLogin
@@ -20,6 +20,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 
 login_manager = LoginManager(app)
+login_manager.login_view = 'unauthorized_user'
+
+if current_user is None:  # this condition is used during development only and will be removed afterwards
+    logout_user()
 
 hashids = Hashids(min_length=4, salt=app.config['SECRET_KEY'])
 
@@ -84,6 +88,7 @@ def url_redirect(id):
 
 
 @app.route('/stats')
+@login_required
 def stats():
     conn = get_db_connection()
     db_urls = conn.execute('SELECT id, created, original_url, clicks FROM urls').fetchall()
@@ -98,7 +103,18 @@ def stats():
     return render_template('stats.html', urls=urls)
 
 
-@app.route('/sign_up', methods=('GET', 'POST'))
+@app.route('/my_profile', methods=['GET', 'POST'])
+@login_required
+def my_profile():
+    if request.method == 'POST':
+        logout_user()
+        flash('You have successfully logged out', category='success')
+        return redirect(url_for('sign_in'))
+
+    return render_template('my_profile.html')
+
+
+@app.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
     if request.method == 'POST':
         username = request.form['username']
@@ -126,13 +142,14 @@ def sign_up():
                     conn.commit()
                     conn.close()
                     flash('You have successfully signed up', category='success')
+                    return redirect(url_for('my_profile'))
             except Exception:
                 flash('Database read error', category='danger')
 
     return render_template('sign_up.html')
 
 
-@app.route('/sign_in', methods=('GET', 'POST'))
+@app.route('/sign_in', methods=['GET', 'POST'])
 def sign_in():
     if request.method == 'POST':
         username = request.form['username']
@@ -152,13 +169,26 @@ def sign_in():
             true_psw_hash = active_user['psw_hash']
 
             if check_password_hash(true_psw_hash, password):
-                flash('You have successfully signed in', category='success')
+                try:
+                    user = conn.execute(f"SELECT * FROM users WHERE username = '{username}' LIMIT 1").fetchone()
+                    userlogin = UserLogin().create(user)
+                    rm = True if request.form.get('remember-me') else False
+                    login_user(userlogin, remember=rm)
+                    flash('You have successfully signed in', category='success')
+                    return redirect(url_for('my_profile'))
+                except Exception:
+                    flash('Database read error', category='danger')
             else:
                 flash('Wrong password. Please check the data', category='danger')
         else:
             flash('This user was not found. Please sign up', category='danger')
 
     return render_template('sign_in.html')
+
+
+@app.route('/unauthorized_user')
+def unauthorized_user():
+    return render_template('unauthorized_user.html')
 
 
 if development:

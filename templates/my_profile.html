@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to your profile, {{ current_user.get_username() }}!</h1>
+<h3>This page is not quite ready, but we are working on it!</h3>
+<p>Here you will see your personal request statistics.</p>
+<form method="post">
+        <div class="mt-2">
+                <button type="submit" class="btn btn-primary">Log out</button>
+        </div>
+</form>
+{% endblock %}

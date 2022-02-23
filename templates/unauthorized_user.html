@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Please sign in to view this page</h1>
+<p>
+    This page contains site usage statistics. To view these materials, please
+    <a href="{{ url_for('sign_up') }}">sign up</a>
+    or <a href="{{ url_for('sign_in') }}">sign in</a>.
+</p>
+{% endblock %}
