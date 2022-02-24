@@ -33,6 +33,8 @@ def load_user(user_id):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     conn = get_db_connection()
+    if conn.execute('SELECT id FROM users WHERE id = 1').fetchone() is None:
+        logout_user()
 
     if request.method == 'POST':
         url = request.form['url']
