@@ -3,7 +3,7 @@
 {% block content %}
 {% if current_user.is_authenticated %}
     <h1>Welcome to FlaskShortener, {{ current_user.get_username() }}</h1>
-{% elif not current_user.is_authenticated %}
+{% else %}
     <h1>Welcome to FlaskShortener</h1>
 {% endif %}
 <form method="post">

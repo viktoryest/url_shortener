@@ -22,9 +22,6 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 login_manager = LoginManager(app)
 login_manager.login_view = 'unauthorized_user'
 
-if current_user is None:  # this condition is used during development only and will be removed afterwards
-    logout_user()
-
 hashids = Hashids(min_length=4, salt=app.config['SECRET_KEY'])
 
 
