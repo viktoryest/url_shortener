@@ -8,8 +8,9 @@ Major changes include:
 - using Bootstrap 5 instead of Bootstrap 4;
 - sign up and sign in pages;
 - creating a table of users, including usernames and passwords;
-- sign up and sign in mechanisms using Flask-Login.  
+- sign up and sign in mechanisms using Flask-Login;
+- statistics of user requests in a personal profile.
 
 Planned:  
 
-- statistics of user requests in a personal profile.
+-the ability to set the first-level domain by yourself.

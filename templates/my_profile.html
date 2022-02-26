@@ -2,8 +2,30 @@
 
 {% block content %}
 <h1>Welcome to your profile, {{ current_user.get_username() }}!</h1>
-<h3>This page is not quite ready, but we are working on it!</h3>
-<p>Here you will see your personal request statistics.</p>
+<h3>Here you can see your statistics:</h3>
+<table class="table">
+    <thead>
+        <tr>
+        <th scope="col">#</th>
+        <th scope="col">Short</th>
+        <th scope="col">Original</th>
+        <th scope="col">Clicks</th>
+        <th scope="col">Creation Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for url in my_urls %}
+            <tr>
+                <th scope="row">{{ url['id'] }}</th>
+                <td>{{ url['short_url'] }}</td>
+                <td>{{ url['original_url'] }}</td>
+                <td>{{ url['clicks'] }}</td>
+                <td>{{ url['created'] }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 <form method="post">
         <div class="mt-2">
                 <button type="submit" class="btn btn-primary">Log out</button>

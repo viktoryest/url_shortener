@@ -43,7 +43,11 @@ def index():
             flash('The URL is required!', category='danger')
             return redirect(url_for('index'))
 
-        url_data = conn.execute('INSERT INTO urls (original_url) VALUES (?)',
+        if current_user.is_authenticated:
+            url_data = conn.execute('INSERT INTO urls (original_url, user_id) VALUES (?, ?)',
+                                    (url, current_user.get_id()))
+        else:
+            url_data = conn.execute('INSERT INTO urls (original_url) VALUES (?)',
                                 (url,))
         conn.commit()
         conn.close()
@@ -105,12 +109,23 @@ def stats():
 @app.route('/my_profile', methods=['GET', 'POST'])
 @login_required
 def my_profile():
+    conn = get_db_connection()
+    db_urls = conn.execute(f'SELECT id, created, original_url, '
+                           f'clicks FROM urls WHERE user_id = "{current_user.get_id()}"').fetchall()
+    conn.close()
+
+    my_urls = []
+    for url in db_urls:
+        url = dict(url)
+        url['short_url'] = request.host_url + hashids.encode(url['id'])
+        my_urls.append(url)
+
     if request.method == 'POST':
         logout_user()
         flash('You have successfully logged out', category='success')
         return redirect(url_for('sign_in'))
 
-    return render_template('my_profile.html')
+    return render_template('my_profile.html', my_urls=my_urls)
 
 
 @app.route('/sign_up', methods=['GET', 'POST'])
