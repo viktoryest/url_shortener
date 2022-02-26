@@ -47,8 +47,8 @@ def index():
             url_data = conn.execute('INSERT INTO urls (original_url, user_id) VALUES (?, ?)',
                                     (url, current_user.get_id()))
         else:
-            url_data = conn.execute('INSERT INTO urls (original_url) VALUES (?)',
-                                (url,))
+            url_data = conn.execute('INSERT INTO urls (original_url, user_id) VALUES (?, ?)', (url, 0))
+
         conn.commit()
         conn.close()
 
