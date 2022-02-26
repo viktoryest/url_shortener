@@ -8,10 +8,8 @@ Major changes include:
 - using Bootstrap 5 instead of Bootstrap 4;
 - sign up and sign in pages;
 - creating a table of users, including usernames and passwords;
-- checking the correctness of the entered data;
-- checking whether the entered password matches the one created during registration.
+- sign up and sign in mechanisms using Flask-Login.  
 
-Planned:
+Planned:  
 
-- correctly organize work with sessions;
-- change the sign up and sign in mechanisms using Flask-Login.
+- statistics of user requests in a personal profile.

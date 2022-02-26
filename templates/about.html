@@ -14,9 +14,7 @@
 <p>You can get a short link, but due to the nature of Heroku, it will only last for 30 minutes.</p>
 <p>In the <a href="{{ url_for('stats') }}">Statistics</a>, you can find out how many times the link has been used.</p>
 <p>There are also <a href="{{ url_for('sign_up') }}">Sign ip</a> and <a href="{{ url_for('sign_in') }}">Sign in</a>
-    pages, the server really checks the correctness of the username and password. However, this mechanism is rude and is
-    given as an example. In the future, it will be changed, it is planned to add the "remember me" option and implement
-    correct work with sessions.
+    pages.
 </p>
 
 {% endblock %}
