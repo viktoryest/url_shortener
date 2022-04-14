@@ -16,6 +16,14 @@
                value="{{ request.form['url'] }}" autofocus>
     </div>
     <div class="mb-2">
+        <label id="short_url_name"><span class="ps-1">Short URL name (optional)</span></label>
+    </div>
+    <div class="mb-3">
+        <input type="text" name="short_url_name"
+               placeholder="Enter your short URL name here" class="form-control"
+               value="{{ request.form['short_url_name'] }}" autofocus>
+    </div>
+    <div class="mb-2">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </form>

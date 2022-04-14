@@ -38,23 +38,44 @@ def index():
 
     if request.method == 'POST':
         url = request.form['url']
+        short_url_name = request.form['short_url_name']
 
         if not url:
             flash('The URL is required!', category='danger')
             return redirect(url_for('index'))
 
-        if current_user.is_authenticated:
-            url_data = conn.execute('INSERT INTO urls (original_url, user_id) VALUES (?, ?)',
-                                    (url, current_user.get_id()))
+        if short_url_name:
+            used_name = conn.execute(f'SELECT short_url_name FROM urls WHERE short_url_name = (?)',
+                                     (short_url_name,)).fetchone()
+            if used_name is None:
+                if current_user.is_authenticated:
+                    conn.execute('INSERT INTO urls (original_url, user_id, short_url_name) VALUES (?, ?, ?)',
+                                 (url, current_user.get_id(), short_url_name))
+                else:
+                    conn.execute('INSERT INTO urls (original_url, user_id, short_url_name) VALUES (?, ?, ?)',
+                                 (url, 0, short_url_name))
+            else:
+                flash('This short URL name is already in use. Please, choose another one', category='info')
+
+            conn.commit()
+            conn.close()
+
+            short_url = request.host_url + short_url_name
+
         else:
-            url_data = conn.execute('INSERT INTO urls (original_url, user_id) VALUES (?, ?)', (url, 0))
+            if current_user.is_authenticated:
+                url_data = conn.execute('INSERT INTO urls (original_url, user_id, short_url_name) VALUES (?, ?, ?)',
+                                        (url, current_user.get_id(), 0))
+            else:
+                url_data = conn.execute('INSERT INTO urls (original_url, user_id, short_url_name) VALUES (?, ?, ?)',
+                                        (url, 0, 0))
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
 
-        url_id = url_data.lastrowid
-        hash_id = hashids.encode(url_id)
-        short_url = request.host_url + hash_id
+            url_id = url_data.lastrowid
+            hash_id = hashids.encode(url_id)
+            short_url = request.host_url + hash_id
 
         return render_template('index.html', short_url=short_url)
 
@@ -69,6 +90,9 @@ def about():
 @app.route('/<id>')
 def url_redirect(id):
     conn = get_db_connection()
+
+    short_url_name = conn.execute('SELECT original_url, short_url_name FROM urls'
+                                  ' WHERE short_url_name = (?)', (id,)).fetchone()
 
     original_id = hashids.decode(id)
     if original_id:
@@ -85,6 +109,22 @@ def url_redirect(id):
         conn.commit()
         conn.close()
         return redirect(original_url)
+
+    elif short_url_name:
+        short_url_name = short_url_name['short_url_name']
+        url_data = conn.execute('SELECT short_url_name, original_url, clicks FROM urls'
+                                ' WHERE short_url_name = (?)', (short_url_name,)
+                                ).fetchone()
+        original_url = url_data['original_url']
+        clicks = url_data['clicks']
+
+        conn.execute('UPDATE urls SET clicks = ? WHERE short_url_name = ?',
+                     (clicks + 1, short_url_name))
+
+        conn.commit()
+        conn.close()
+        return redirect(original_url)
+
     else:
         flash('Invalid URL', category='danger')
         return redirect(url_for('index'))
@@ -94,13 +134,18 @@ def url_redirect(id):
 @login_required
 def stats():
     conn = get_db_connection()
-    db_urls = conn.execute('SELECT id, created, original_url, clicks FROM urls').fetchall()
+    db_urls = conn.execute('SELECT id, created, original_url, clicks, short_url_name FROM urls').fetchall()
     conn.close()
 
     urls = []
     for url in db_urls:
         url = dict(url)
-        url['short_url'] = request.host_url + hashids.encode(url['id'])
+        short_url_name = url['short_url_name']
+
+        if short_url_name == '0':
+            url['short_url'] = request.host_url + hashids.encode(url['id'])
+        else:
+            url['short_url'] = request.host_url + short_url_name
         urls.append(url)
 
     return render_template('stats.html', urls=urls)
@@ -110,14 +155,21 @@ def stats():
 @login_required
 def my_profile():
     conn = get_db_connection()
-    db_urls = conn.execute(f'SELECT id, created, original_url, '
+    db_urls = conn.execute(f'SELECT id, created, original_url, short_url_name,'
                            f'clicks FROM urls WHERE user_id = "{current_user.get_id()}"').fetchall()
     conn.close()
 
     my_urls = []
     for url in db_urls:
         url = dict(url)
-        url['short_url'] = request.host_url + hashids.encode(url['id'])
+        print(url)
+        short_url_name = url['short_url_name']
+        print(short_url_name)
+
+        if short_url_name == '0':
+            url['short_url'] = request.host_url + hashids.encode(url['id'])
+        else:
+            url['short_url'] = request.host_url + short_url_name
         my_urls.append(url)
 
     if request.method == 'POST':
