@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, current_user, login_required, 
 from werkzeug.security import generate_password_hash, check_password_hash
 import init_db
 from user_class import UserLogin
+from make_url_list import make_url_list
 
 development = os.environ.get('HEROKU') is None
 
@@ -137,16 +138,7 @@ def stats():
     db_urls = conn.execute('SELECT id, created, original_url, clicks, short_url_name FROM urls').fetchall()
     conn.close()
 
-    urls = []
-    for url in db_urls:
-        url = dict(url)
-        short_url_name = url['short_url_name']
-
-        if short_url_name == '0':
-            url['short_url'] = request.host_url + hashids.encode(url['id'])
-        else:
-            url['short_url'] = request.host_url + short_url_name
-        urls.append(url)
+    urls = make_url_list(db_urls, hashids)
 
     return render_template('stats.html', urls=urls)
 
@@ -159,18 +151,7 @@ def my_profile():
                            f'clicks FROM urls WHERE user_id = "{current_user.get_id()}"').fetchall()
     conn.close()
 
-    my_urls = []
-    for url in db_urls:
-        url = dict(url)
-        print(url)
-        short_url_name = url['short_url_name']
-        print(short_url_name)
-
-        if short_url_name == '0':
-            url['short_url'] = request.host_url + hashids.encode(url['id'])
-        else:
-            url['short_url'] = request.host_url + short_url_name
-        my_urls.append(url)
+    my_urls = make_url_list(db_urls, hashids)
 
     if request.method == 'POST':
         logout_user()
