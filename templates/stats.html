@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+td { word-wrap:break-word; }
+
 
 {% block content %}
     <h1>{% block title %} FlaskShortener Statistics {% endblock %}</h1>
@@ -16,8 +18,9 @@
             {% for url in urls %}
                 <tr>
                     <th scope="row">{{ url['id'] }}</th>
-                    <td>{{ url['short_url'] }}</td>
-                    <td>{{ url['original_url'] }}</td>
+                    <td><a href="{{ url['short_url'] }}">{{ url['short_url'] }}</a></td>
+                    <td style="word-break:break-all; width: 60%;"><a href="{{ url['original_url'] }}">
+                        {{ url['original_url'] }}</a></td>
                     <td>{{ url['clicks'] }}</td>
                     <td>{{ url['created'] }}</td>
                 </tr>

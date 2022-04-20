@@ -40,7 +40,11 @@ def index():
     if conn.execute('SELECT id FROM users WHERE id = 1').fetchone() is None:
         logout_user()
 
-        short_url = get_short_url(get_db_connection(), hashids)
+    if request.method == 'POST':
+        url = request.form['url']
+        short_url_name = request.form['short_url_name']
+
+        short_url = get_short_url(get_db_connection(), hashids, url, short_url_name)
         return render_template('index.html', short_url=short_url)
 
     return render_template('index.html')
