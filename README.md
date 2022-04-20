@@ -10,6 +10,6 @@ Major changes include:
 - access restriction to general statistics
 (possible only after authorization);
 - individual statistics in a personal profile;
--the ability to set the first-level domain by yourself;
+- the ability to set the first-level domain by yourself;
 - visual elements, like greetings, various types of
 flash messages.
