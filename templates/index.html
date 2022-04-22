@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
 
 {% block content %}
 {% if current_user.is_authenticated %}
@@ -7,24 +8,9 @@
     <h1>Welcome to FlaskShortener!</h1>
 {% endif %}
 <form method="post">
-    <div class="mb-2">
-        <label id="url"><span class="ps-1">URL</span></label>
-    </div>
-    <div class="mb-3">
-        <input type="text" name="url"
-               placeholder="URL to shorten" class="form-control"
-               value="{{ request.form['url'] }}" autofocus>
-    </div>
-    <div class="mb-2">
-        <label id="short_url_name"><span class="ps-1">Short URL name (optional)</span></label>
-    </div>
-    <div class="mb-3">
-        <input type="text" name="short_url_name"
-               placeholder="Enter your short URL name here" class="form-control"
-               value="{{ request.form['short_url_name'] }}" autofocus>
-    </div>
-    <div class="mb-2">
-        <button type="submit" class="btn btn-primary">Submit</button>
+    <div>
+        {{ form.hidden_tag() }}
+        {{ render_form(form) }}
     </div>
 </form>
 

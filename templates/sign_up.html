@@ -1,32 +1,13 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
 
 {% block title %} Sign up {% endblock %}
 {% block content %}
 <form style="width: 500px" method="post">
     <h1>Please sign up</h1>
     <div class="form-floating">
-        <div class="mb-2">
-            <label id="username"><span class="ps-1">Enter username</span></label>
-        </div>
-        <div class="mb-2">
-            <input type="text" name="username"
-                   placeholder="Username" class="form-control" autofocus>
-        </div>
-        <div class="mb-2">
-            <label id="password"><span class="ps-1">Enter password</span></label>
-        </div>
-        <div class="mb-2">
-            <input type="password" name="password"
-                   placeholder="Password" class="form-control">
-        </div>
-    </div>
-    <div class="checkbox mb-2 mt-2">
-        <label>
-            <input type="checkbox" value="remember-me"> Remember me
-        </label>
-    </div>
-    <div class="mt-2">
-        <button type="submit" class="btn btn-primary">Sign up</button>
+        {{ form.hidden_tag() }}
+        {{ render_form(form) }}
     </div>
 </form>
 

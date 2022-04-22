@@ -3,6 +3,7 @@ import sqlite3
 from hashids import Hashids
 from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_login import LoginManager, current_user, login_required, logout_user
+from flask_bootstrap import Bootstrap5
 import init_db
 from user_class import UserLogin
 from make_url_list import make_url_list
@@ -10,6 +11,7 @@ from url_shorting_handler import get_short_url
 from url_redirect_handler import get_redirect_url
 from sign_up_handler import check_sign_up
 from sign_in_handler import check_sign_in
+from forms import SignUpForm, SignInForm, URLShortingForm
 
 development = os.environ.get('HEROKU') is None
 
@@ -22,6 +24,8 @@ def get_db_connection():
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
+
+bootstrap = Bootstrap5(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'unauthorized_user'
@@ -36,18 +40,16 @@ def load_user(user_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    form = URLShortingForm()
     conn = get_db_connection()
     if conn.execute('SELECT id FROM users WHERE id = 1').fetchone() is None:
         logout_user()
 
-    if request.method == 'POST':
-        url = request.form['url']
-        short_url_name = request.form['short_url_name']
+    if form.validate_on_submit():
+        short_url = get_short_url(get_db_connection(), hashids)
+        return render_template('index.html', form=form, short_url=short_url)
 
-        short_url = get_short_url(get_db_connection(), hashids, url, short_url_name)
-        return render_template('index.html', short_url=short_url)
-
-    return render_template('index.html')
+    return render_template('index.html', form=form)
 
 
 @app.route('/about')
@@ -92,14 +94,18 @@ def my_profile():
 
 @app.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
-    check_sign_up(get_db_connection())
-    return render_template('sign_up.html')
+    form = SignUpForm()
+    if form.validate_on_submit():
+        check_sign_up(get_db_connection())
+    return render_template('sign_up.html', form=form)
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
 def sign_in():
-    check_sign_in(get_db_connection())
-    return render_template('sign_in.html')
+    form = SignInForm()
+    if form.validate_on_submit():
+        check_sign_in(get_db_connection())
+    return render_template('sign_in.html', form=form)
 
 
 @app.route('/unauthorized_user')
