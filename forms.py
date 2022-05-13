@@ -1,3 +1,4 @@
+import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, BooleanField, PasswordField, URLField
 from wtforms.validators import ValidationError
@@ -29,8 +30,10 @@ class SignUpForm(FlaskForm):
             raise ValidationError('Please, enter username')
 
     def validate_password(form, password):
-        if len(password.data) < 6 or len(password.data) > 20:
-            raise ValidationError('The password must contain between 6 and 20 characters')
+        valid_chars = re.compile(r'[\w~!@#$%^&*_+=`|(){}\[\]:;"\'<>,.?/\\-]{6,20}', re.ASCII)
+        if not re.fullmatch(valid_chars, password.data):
+            raise ValidationError('Password must be 6-20 characters and include '
+                                  'latin letters, numbers and special characters ~!@#$%^&*_+=`|(){}[]:;"\'<>,.?/ -\\')
 
 
 class URLShortingForm(FlaskForm):
